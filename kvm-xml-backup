@@ -1,0 +1,30 @@
+#!/bin/bash
+
+mapfile -t VMARRAY < <(virsh list --all | awk 'NR > 2 && NF > 1 {print $2}');
+
+declare -i X;
+declare PATH="/home/fluffeh/Cloud/Personal/VMs/backup/XML";
+
+for VM in "${VMARRAY[@]}"
+do
+
+    # create backup file
+    /bin/virsh dumpxml "${VM}" > "${PATH}/${VM}.xml.$(/sbin/date +%F)";
+
+    # cleanup backup files if more than 3
+
+    mapfile -t XMLS < <(/sbin/ls -lrt "${PATH}/${VM}.xml"* | /sbin/awk '{print $9}');
+    X="${#XMLS[@]}";
+
+    if [[ "${X}" -ge 4 ]]; then
+
+        until [ "${X}" -eq 3 ];
+        do
+            /sbin/rm "${XMLS[("${X}" - "${#XMLS[@]}") * -1]}";
+            X=X-1;
+        done
+
+    fi
+
+done;
+
