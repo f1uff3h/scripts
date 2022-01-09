@@ -13,14 +13,14 @@ do
 
     # cleanup backup files if more than 3
 
-    mapfile -t XMLS < <(/sbin/ls -lrt "${PATH}/${VM}.xml"* | /sbin/awk '{print $9}');
-    X="${#XMLS[@]}";
+    mapfile -t BACKUPS < <(/sbin/ls -lrat "${PATH}/${VM}.xml"* | /sbin/awk '{print $9}');
+    X="${#BACKUPS[@]}";
 
     if [[ "${X}" -ge 4 ]]; then
 
         until [ "${X}" -eq 3 ];
         do
-            /sbin/rm "${XMLS[("${X}" - "${#XMLS[@]}") * -1]}";
+            /sbin/rm "${BACKUPS[("${X}" - "${#BACKUPS[@]}") * -1]}";
             X=X-1;
         done
 
