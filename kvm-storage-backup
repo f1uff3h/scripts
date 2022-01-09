@@ -1,0 +1,47 @@
+#! /bin/bash
+
+mapfile -t VMARRAY < <(virsh list --all | awk 'NR > 2 && NF > 1 {print $2}');
+
+declare PATH="/home/fluffeh/Cloud/Personal/VMs/backup/Storage";
+declare -i X;
+
+for VM in "${VMARRAY[@]}";
+do
+
+    mapfile -t STRGARRAY < <(/bin/virsh domblklist "${VM}" | /sbin/awk 'NR > 2 && NF > 1 {print $2}');
+
+    for STRG in "${STRGARRAY[@]}";
+    do
+
+        # do not include ISO files
+        if [[ "${STRG}" == *".iso"* ]]; then
+            continue;
+        # do not include RAID disk
+        elif [[ "${STRG}" == *"/sda"* ]]; then
+            continue;
+        else
+
+            # create backup file
+            /sbin/dd if="${STRG}" of="${PATH}/${VM}.${STRG#"/dev/"}.$(/sbin/date +%F)" bs=4M status=progress;
+
+            # cleanup backup files if more than 3
+            mapfile -t BACKUPS < <(/sbin/ls -lrat "${PATH}/${VM}.${STRG#"/dev/"}"* | /sbin/awk '{print $9}');
+            X="${#BACKUPS[@]}";
+
+            if [[ "${X}" -ge 4 ]]; then
+
+                until [ "${X}" -eq 3 ];
+                do
+
+                    /sbin/rm "${BACKUPS[("${X}" - "${#BACKUPS[@]}") * -1]}";
+                    X=X-1;
+
+                done
+
+            fi
+
+        fi
+
+    done
+
+done
