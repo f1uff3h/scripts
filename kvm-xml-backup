@@ -3,7 +3,7 @@
 mapfile -t VMARRAY < <(virsh list --all | awk 'NR > 2 && NF > 1 {print $2}');
 
 declare -i X;
-declare PATH="/home/fluffeh/Cloud/Personal/VMs/backup/XML";
+declare PATH="/run/mount/Personal/VMs/backup/XML";
 
 for VM in "${VMARRAY[@]}"
 do
@@ -25,6 +25,5 @@ do
         done
 
     fi
-
 done;
 
