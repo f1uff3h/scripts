@@ -1,0 +1,33 @@
+#!/bin/sh
+# Script to aid in migrating the Docker folder
+
+read -p "Provide the current location of the Docker folder. (absolute path. e.g. /path/to/Docker):" CURRPATH;
+read -p "Provide the desired location of the Docker folder. (absolute path. e.g. /new/path/):" NEWPATH;
+
+# Copying files
+# rsync -vrul --progress $CURRPATH $NEWPATH;
+
+# Updating container configs
+mapfile -t CONFARRAY < <(find ${NEWPATH}Docker/containers -name "config.v2.json");
+
+for CONF in "${CONFARRAY[@]}";
+do
+    cp "${CONF}" "${CONF}.bkp";
+    sed -i "s#${CURRPATH}#${NEWPATH}Docker#g" $CONF;
+done
+
+# Update docker daemon.json
+if [[ -f /etc/docker/daemon.json ]];
+then
+    if grep -q data-root /etc/docker/daemon.json;
+    then
+        sed -i "s#\"data-root\":.*#\"data-root\": \"${NEWPATH}/Docker\"#";
+    else
+        echo -e "{\n\t\"data-root\": \"${NEWPATH}Docker\"\n}" >> /etc/docker/daemon.json;
+    fi
+else
+    touch /etc/docker/daemon.json;
+    echo -e "{\n\t\"data-root\": \"${NEWPATH}Docker\"\n}" > /etc/docker/daemon.json;
+fi
+
+echo -e "\nDone!\nPlease restart Docker daemon to apply new settings!";
