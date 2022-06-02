@@ -3,7 +3,7 @@
 mapfile -t VMARRAY < <(virsh list --all | awk 'NR > 2 && NF > 1 {print $2}');
 
 declare -i X;
-declare PATH="/run/mount/Personal/VMs/backup/XML";
+declare PATH="${VMPATH}/backup/XML"
 
 for VM in "${VMARRAY[@]}"
 do
@@ -17,13 +17,11 @@ do
     X="${#BACKUPS[@]}";
 
     if [[ "${X}" -ge 4 ]]; then
-
         until [ "${X}" -eq 3 ];
         do
             /sbin/rm "${BACKUPS[("${X}" - "${#BACKUPS[@]}") * -1]}";
             X=X-1;
         done
-
     fi
 done;
 
