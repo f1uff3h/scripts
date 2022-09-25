@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+CYAN="\e[0;36m"
+NC="\e[0m"
+
+# Obtaining latest version name
+VNAME=$( \
+         curl --silent "https://api.github.com/repos/WaterfoxCo/Waterfox/releases/latest" | \
+         grep "tag_name" | \
+         sed -r 's/.*"([^"]+)".*/\1/';
+       )
+
+# Pulling tarball
+echo -e "\n${CYAN}Pulling Waterfox tarball:${NC}"
+
+wget $( \
+         curl --silent "https://api.github.com/repos/WaterfoxCo/Waterfox/releases/latest" | \
+         grep -e ".*url.*${VNAME}.*tar.*" | \
+         sed -r 's/.*"([^"]+)"/\1/' \
+      )
+
+# TAR extraction
+echo -e "\n${CYAN}Extracting Waterfox:${NC}"
+tar -xvjf $(ls | grep "tar") --directory=/opt/
+
+# Creating desktop file
+echo -e "\n${CYAN}Pulling waterfox.desktop${NC}"
+curl "https://raw.githubusercontent.com/fluffehGit/scripts/master/waterfox/waterfox.desktop" \
+     -o /usr/share/applications/waterfox.desktop
+
+echo -e "\n${CYAN}Waterfox installed successfully!${NC}"
