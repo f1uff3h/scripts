@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Waterfox
 GenericName=Browser
-Exec=/opt/waterfox/waterfox
+Exec=/opt/waterfox/waterfox %u
 Terminal=false
 Icon=/opt/waterfox/browser/chrome/icons/default/default256.png
 Type=Application
