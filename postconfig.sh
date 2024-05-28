@@ -60,57 +60,53 @@ cat <<-EOT >/home/peco/bin/backup.sh
 	restore=false
 
 	usage() {
-		echo -e "\nUsage: backup.sh\n"
-		echo -e "\nOptions:"
-		echo -e "\t-h\tDisplay help"
-		echo -e "\t-r\tRestore backup\n"
-		exit 0
+	  echo -e "\nUsage: backup.sh\n"
+	  echo -e "\nOptions:"
+	  echo -e "\t-h\tDisplay help"
+	  echo -e "\t-r\tRestore backup\n"
+	  exit 0
 	}
 
 	while getopts "hr" opt; do
-		case ${opt} in
-		h)
-			usage
-			;;
-		r)
-			restore=true
-			;;
-		\?)
-			echo -e "\n${RED}[ERROR] -- Invalid option!${NC}"
-			exit 1
-			;;
-		esac
+	  case \$opt in
+	  h)
+	    usage
+	    ;;
+	  r)
+	    restore=true
+	    ;;
+	  \?)
+	    echo -e "\n\${RED}[ERROR] -- Invalid option!\${NC}"
+	    exit 1
+	    ;;
+	  esac
 	done
 
 	echo -e "\n[INFO] -- Mounting NFS share..."
 	sudo mount -t nfs nfs.camarad.tech:/mnt/storage/peco/misc /home/peco/mnt/
 
-	if $restore; then
-		echo -e "\n[INFO] -- Restoring backup..."
-		rsync -avrh --progress /home/peco/mnt/ /home/peco/
+	if \$restore; then
+	  echo -e "\n[INFO] -- Restoring backup..."
+	  rsync -avrh --progress /home/peco/mnt/ /home/peco/
 	  chown -R peco:peco /home/peco/.waterfox
 	  chown -R peco:peco /home/peco/.mozilla
 	  chown -R peco:peco /home/peco/.config/BraveSoftware
 	  chown -R peco:peco /home/peco/.ssh
 	  chown -R peco:peco /home/peco/.gitconfig
-		echo -e "\n[INFO] -- Restore completed..."
-		exit 0
+	  echo -e "\n[INFO] -- Restore completed..."
 	else
-		echo -e "\n[INFO] -- Backup started..."
-		rsync -avrh --progress /home/peco/.waterfox /home/peco/mnt/
-		rsync -avrh --progress /home/peco/.firefox /home/peco/mnt/
-		rsync -avrh --progress /home/peco/.config/BraveSoftware/ /home/peco/mnt/
-		rsync -avrh --progress /home/peco/.ssh /home/peco/mnt/
-		rsync -avrh --progress /home/peco/.gitconfig /home/peco/mnt/
-		echo -e "\n[INFO] -- Backup completed..."
+	  echo -e "\n[INFO] -- Backup started..."
+	  rsync -avrh --progress /home/peco/.waterfox /home/peco/mnt/
+	  rsync -avrh --progress /home/peco/.firefox /home/peco/mnt/
+	  rsync -avrh --progress /home/peco/.config/BraveSoftware/ /home/peco/mnt/
+	  rsync -avrh --progress /home/peco/.ssh /home/peco/mnt/
+	  rsync -avrh --progress /home/peco/.gitconfig /home/peco/mnt/
+	  echo -e "\n[INFO] -- Backup completed..."
 	fi
+
+	sudo umount /home/peco/mnt/
 EOT
 chmod +x /home/peco/bin/backup.sh
 chown peco:peco /home/peco/bin/backup.sh
 
-echo -e "\n[INFO] -- Restoring backup..."
-mount -t nfs nfs.camarad.tech:/mnt/storage/peco/misc /home/peco/mnt/
-sudo -u peco /bin/bash -e -- <<-EOT
-	mkdir -p /home/peco/mnt
-	/home/peco/bin/backup.sh -r
-EOT
+systemctl daemon-reload
