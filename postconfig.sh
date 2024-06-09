@@ -54,6 +54,8 @@ echo -e "\n[INFO] -- Adding backup script..."
 cat <<-EOT >/home/peco/bin/backup.sh
 	#!/bin/bash
 
+	set -e
+
 	RED='\e[0;31m'
 	NC='\e[0m'
 
@@ -83,24 +85,20 @@ cat <<-EOT >/home/peco/bin/backup.sh
 	done
 
 	echo -e "\n[INFO] -- Mounting NFS share..."
+	mkdir -p /home/peco/mnt
 	sudo mount -t nfs nfs.camarad.tech:/mnt/storage/peco/misc /home/peco/mnt/
 
 	if \$restore; then
 	  echo -e "\n[INFO] -- Restoring backup..."
 	  rsync -avrh --progress /home/peco/mnt/ /home/peco/
-	  chown -R peco:peco /home/peco/.waterfox
-	  chown -R peco:peco /home/peco/.mozilla
-	  chown -R peco:peco /home/peco/.config/BraveSoftware
-	  chown -R peco:peco /home/peco/.ssh
-	  chown -R peco:peco /home/peco/.gitconfig
 	  echo -e "\n[INFO] -- Restore completed..."
 	else
 	  echo -e "\n[INFO] -- Backup started..."
-	  rsync -avrh --progress /home/peco/.waterfox /home/peco/mnt/
-	  rsync -avrh --progress /home/peco/.firefox /home/peco/mnt/
-	  rsync -avrh --progress /home/peco/.config/BraveSoftware/ /home/peco/mnt/
-	  rsync -avrh --progress /home/peco/.ssh /home/peco/mnt/
-	  rsync -avrh --progress /home/peco/.gitconfig /home/peco/mnt/
+	  rsync -avrh --progress --delete /home/peco/.waterfox /home/peco/mnt/
+	  rsync -avrh --progress --delete /home/peco/.mozilla /home/peco/mnt/
+	  rsync -avrh --progress --delete /home/peco/.config/BraveSoftware/ /home/peco/mnt/
+	  rsync -avrh --progress --delete /home/peco/.ssh /home/peco/mnt/
+	  rsync -avrh --progress --delete /home/peco/.gitconfig /home/peco/mnt/
 	  echo -e "\n[INFO] -- Backup completed..."
 	fi
 
