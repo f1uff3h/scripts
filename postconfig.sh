@@ -41,6 +41,7 @@ chmod +x /home/peco/bin/nfsmount.sh
 chown peco:peco /home/peco/bin/nfsmount.sh
 
 echo -e "\n[INFO] -- Adding NFS mount script to autostart..."
+mkdir -p /home/peco/.config/autostart
 cat <<-EOT >/home/peco/.config/autostart/NFSMount.desktop
 	[Desktop Entry]
 	Type=Application
@@ -110,4 +111,35 @@ EOT
 chmod +x /home/peco/bin/backup.sh
 chown peco:peco /home/peco/bin/backup.sh
 
+sudo -u peco /bin/bash -e -- <<-EOT
+	/home/peco/bin/backup.sh -r
+	pushd /home/peco/
+	git clone --bare git@github.com:f1uff3h/.files/
+	git --git-dir=/home/peco/.files.git/ --work-tree=/home/peco checkout 2>&1 | awk '/\s+\./{print $1}' | xargs -I{} rm -rf {}
+	git --git-dir=/home/peco/.files.git/ --work-tree=/home/peco checkout 
+EOT
+
 systemctl daemon-reload
+
+if dmidecode -s system-product-name | grep -q "ThinkPad T15 Gen 1"; then
+	pacman -S sof-firmware
+
+	cat <<-EOT >/etc/modprobe.d/disable-nouveau.conf
+		blacklist nouveau
+		options nouveau modeset=0
+	EOT
+
+	cat <<-EOT >/etc/udev/rules.d/00-remove-nvidia.rules
+		# Remove NVIDIA USB xHCI Host Controller devices, if present
+		ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c0330", ATTR{power/control}="auto", ATTR{remove}="1"
+
+		# Remove NVIDIA USB Type-C UCSI devices, if present
+		ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c8000", ATTR{power/control}="auto", ATTR{remove}="1"
+
+		# Remove NVIDIA Audio devices, if present
+		ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x040300", ATTR{power/control}="auto", ATTR{remove}="1"
+
+		# Remove NVIDIA VGA/3D controller devices
+		ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]*", ATTR{power/control}="auto", ATTR{remove}="1"
+	EOT
+fi
