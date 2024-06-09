@@ -8,6 +8,9 @@ if [ "$EUID" -ne 0 ]; then
 	exit 1
 fi
 
+echo -e "\n[INFO] -- Configuring firewalld..."
+firewall-cmd --zone=public --add-service=kdeconnect --permanent
+
 echo -e "\n[INFO] -- Adding NFS to fstab..."
 cat <<-EOT >>/etc/fstab
 	# /home/peco/Documents
