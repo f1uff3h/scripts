@@ -121,7 +121,9 @@ EOT
 
 systemctl daemon-reload
 
-if dmidecode -s system-product-name | grep -q "ThinkPad T15 Gen 1"; then
+if dmidecode -s system-product-name | grep -q "ThinkPad T15 Gen 1" || dmidecode -s system-product-name | grep -q "20S6003NRI"; then
+	echo -e "\n[INFO] -- Thinkpad T15 detected"
+
 	pacman -S sof-firmware
 
 	cat <<-EOT >/etc/modprobe.d/disable-nouveau.conf
