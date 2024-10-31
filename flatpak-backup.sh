@@ -64,7 +64,7 @@ cat <<-EOT >>"${bin_file}"
 	mkdir -p "\${backup_dir}"
 	umount "\${backup_dir}" || echo "\${log_timestamp} [INFO] -- \${backup_dir} not mounted..."
 
-	echo "\${log_timestamp} [INFO] -- Mounting NFS backup fileshare..."
+	echo "\${log_timestamp} [INFO] -- Mounting \${NFS_SHARE} at \${backup_dir}..."
 	mount -t nfs "\${NFS_SHARE}" "\${backup_dir}"
 
 	if [[ \$restore_switch = false ]]; then
@@ -82,6 +82,8 @@ cat <<-EOT >>"${bin_file}"
 
 	fi
 
+	echo "\${log_timestamp} [INFO] -- Unmounting \${backup_dir}..."
+	umount "\${backup_dir}" || echo "\${log_timestamp} [INFO] -- \${backup_dir} not mounted..."
   echo -e "\${log_timestamp} [\${green}SUCCESS\${nc}] -- Completed successfully!"
 EOT
 chmod 770 "${bin_file}"
