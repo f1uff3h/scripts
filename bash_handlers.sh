@@ -24,6 +24,11 @@ log() {
 }
 readonly -f log
 
+handle_log() {
+  exec &>> >(tee -a "/var/log/$(basename "${0}")")
+}
+readonly -f handle_log
+
 handle_error() {
   log error "An error occured on line ${1}: '${BASH_COMMAND}' exited with status code ${?}"
 }
@@ -59,5 +64,3 @@ handle_debian() {
 readonly -f handle_debian
 
 trap 'handle_error $LINENO' ERR
-
-exec &>> >(tee -a "/var/log/$(basename "${0}")")
