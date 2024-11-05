@@ -1,34 +1,28 @@
 #!/bin/bash
-source ./internal/error_handler.sh
 
-# checks
-if [[ $EUID -ne 0 ]]; then
-  echo -e "${log_timestamp} [${red}ERROR${nc}] -- This script must be run as root!"
-  exit 1
-fi
-if [[ -z $NFS_SHARE ]]; then
-  echo -e "${log_timestamp} [${red}ERROR${nc}] -- Environment lacks required variable NFS_SHARE!"
-  exit 1
-fi
+source >(curl -s https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh)
 
-user_bin_path="${user_home}/bin"
-bin_file="${user_bin_path}/flatback.sh"
+readonly env_vars=('NFS_SHARE')
+readonly user_home
+user_home=$(grep 1000 /etc/passwd | cut -d ":" -f6)
+readonly flatback_binary="${user_home}/bin/flatback.sh"
 
-echo -e "${log_timestamp} [INFO] -- Installing flatpak backup script..."
-mkdir -p "${user_bin_path}"
-cat ./internal/error_handler.sh >"${bin_file}"
+handle_root
+handle_environment "${env_vars[@]}"
 
-cat <<-EOT >>"${bin_file}"
+log info "Installing flatpak backup script"
+mkdir -p "${flatback_binary%/*}"
+curl -o "${flatback_binary}" https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh
 
-	# checks
-	if [[ \$EUID -ne 0 ]]; then
-	  echo -e "\${log_timestamp} [\${red}ERROR\${nc}] -- This script must be run as root!"
-	  exit 1
-	fi
-	if [[ -z \$NFS_SHARE ]]; then
-	  echo -e "\${log_timestamp} [\${red}ERROR\${nc}] -- Environment lacks required variable NFS_SHARE!"
-	  exit 1
-	fi
+cat <<-EOT >>"${flatback_binary}"
+
+	readonly env_vars=('NFS_SHARE')
+	readonly user_home
+	readonly user_home
+	user_home=\$(grep 1000 /etc/passwd | cut -d ":" -f6)
+
+	handle_root
+	handle_environment "\${env_vars[@]}"
 
 	restore_switch=false
 	backup_dir="\${user_home}/.backup"
@@ -54,42 +48,41 @@ cat <<-EOT >>"${bin_file}"
 	    ;;
 	  *)
 	    usage
-	    echo -e "\${log_timestamp} [\${red}ERROR\${nc}] -- Unknown flag: \${arg}"
+	    log error "Unknown flag: \${arg}"
 	    exit 1
 	    ;;
 	  esac
 	done
 
-	echo "\${log_timestamp} [INFO] -- Prevent clobbering of \${backup_dir} directory..."
+	log info "Prevent clobbering of \${backup_dir} directory"
 	mkdir -p "\${backup_dir}"
-	umount "\${backup_dir}" || echo "\${log_timestamp} [INFO] -- \${backup_dir} not mounted..."
+	umount "\${backup_dir}" || log inf "\${backup_dir} not mounted"
 
-	echo "\${log_timestamp} [INFO] -- Mounting \${NFS_SHARE} at \${backup_dir}..."
+	log info "Mounting \${NFS_SHARE} at \${backup_dir}"
 	mount -t nfs "\${NFS_SHARE}" "\${backup_dir}"
 
 	if [[ \$restore_switch = false ]]; then
 
-	  echo "\${log_timestamp} [INFO] -- Backing up flatpak application list..."
+	  log info "Backing up flatpak application list"
 	  mkdir -p "\${flatpak_backup_dir}"
 	  flatpak list --columns=application --app >"\${flatpak_backup_dir}/apps.list"
 
-	  echo "\${log_timestamp} [INFO] -- Backing up flatpak application data..."
-	  rsync --archive --delete --human-readable --progress --verbose --exclude="cache" "\${user_home}/.var/app" "\${flatpak_backup_dir}/"
+	  log info "Backing up flatpak application data"
+	  rsync --archive --delete --human-readable --partial --progress --verbose --exclude="cache" "\${user_home}/.var/app" "\${flatpak_backup_dir}/"
 
 	else
-	  echo "\${log_timestamp} [INFO] -- Restoring flatpak application data..."
+	  log info "Restoring flatpak application data"
 	  rsync --archive --human-readable --progress --verbose "\${flatpak_backup_dir}/app" "\${user_home}/.var/"
-
 	fi
 
-	echo "\${log_timestamp} [INFO] -- Unmounting \${backup_dir}..."
-	umount "\${backup_dir}" || echo "\${log_timestamp} [INFO] -- \${backup_dir} not mounted..."
-  echo -e "\${log_timestamp} [\${green}SUCCESS\${nc}] -- Completed successfully!"
+	log info "Unmounting \${backup_dir}"
+	umount "\${backup_dir}" || log info "\${backup_dir} not mounted"
+	log success "Completed successfully"
 EOT
-chmod 770 "${bin_file}"
+chmod 770 "${flatback_binary}"
 chown 1000:1000 "${_}"
 
-echo "${log_timestamp} [INFO] -- Installing flatback service..."
+log info "Installing flatback service"
 cat <<-EOT >/usr/lib/systemd/system/flatback.service
 	[Unit]
 	Description=Backup flatpak data
@@ -97,13 +90,13 @@ cat <<-EOT >/usr/lib/systemd/system/flatback.service
 	[Service]
 	Type=oneshot
 	Environment="NFS_SHARE=${NFS_SHARE}"
-	ExecStart="${bin_file}"
+	ExecStart="${flatback_binary}"
 
 	[Install]
 	WantedBy=multi-user.target
 EOT
 
-echo "${log_timestamp} [INFO] -- Installing flatback timer..."
+log info "Installing flatback timer"
 cat <<-EOT >/usr/lib/systemd/system/flatback.timer
 	[Unit]
 	Description=Run flatback every hour
@@ -116,8 +109,8 @@ cat <<-EOT >/usr/lib/systemd/system/flatback.timer
 	WantedBy=timers.target
 EOT
 
-echo "${log_timestamp} [INFO] -- Enabling and starting flatback.timer..."
+log info "Enabling and starting flatback.timer"
 systemctl daemon-reload
 systemctl enable --now flatback.timer
 
-echo -e "${log_timestamp} [${green}SUCCESS${nc}] -- Completed successfully!"
+log success "Completed successfully"
