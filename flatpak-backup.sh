@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source >(curl -s https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh)
+source <(curl -s https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh)
 
 readonly env_vars=('NFS_SHARE')
 readonly user_home
@@ -12,7 +12,8 @@ handle_environment "${env_vars[@]}"
 
 log info "Installing flatpak backup script"
 mkdir -p "${flatback_binary%/*}"
-curl -o "${flatback_binary}" https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh
+echo "#!/bin/bash" >"${flatback_binary}"
+curl https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh >>"${flatback_binary}"
 
 cat <<-EOT >>"${flatback_binary}"
 

@@ -29,14 +29,7 @@ log() {
 readonly -f log
 
 handle_log() {
-  local log_path
-
-  if [ -z "${1}" ]; then
-    log_path="/var/log/$(basename "${0}")"
-  else
-    log_path="${1}"
-  fi
-
+  local -r log_path="${1:-/var/log/$(basename "${0}")}"
   exec &>> >(tee -a "${log_path}")
 }
 readonly -f handle_log

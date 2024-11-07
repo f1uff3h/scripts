@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source >(curl -s https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh)
+source <(curl -s https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh)
 
 handle_root
 
