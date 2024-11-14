@@ -28,6 +28,18 @@ log() {
 }
 readonly -f log
 
+notify() {
+  case "${1,,}" in
+  system)
+    notify-send -t 3000 "${2}"
+    ;;
+  *)
+    log error "Invalid notification type ${1}"
+    ;;
+  esac
+}
+readonly -f notify
+
 handle_log() {
   local -r log_path="${1:-/var/log/$(basename "${0}")}"
   exec &>> >(tee -a "${log_path}")
