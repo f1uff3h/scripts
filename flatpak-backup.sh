@@ -2,9 +2,8 @@
 
 source <(curl -s https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh)
 
-readonly env_vars=('NFS_SHARE')
-readonly user_home
 user_home=$(grep 1000 /etc/passwd | cut -d ":" -f6)
+readonly env_vars=('NFS_SHARE')
 readonly flatback_binary="${user_home}/bin/flatback.sh"
 
 handle_root
@@ -18,10 +17,8 @@ curl https://codeberg.org/f1uff3h/scripts/raw/branch/main/bash_handlers.sh >>"${
 cat <<-EOT >>"${flatback_binary}"
 
 	readonly env_vars=('NFS_SHARE')
-	readonly user_home
-	readonly user_home
-	user_home=\$(grep 1000 /etc/passwd | cut -d ":" -f6)
-
+	user_home="${user_home}"
+  readonly user_home
 	handle_root
 	handle_environment "\${env_vars[@]}"
 
@@ -57,7 +54,7 @@ cat <<-EOT >>"${flatback_binary}"
 
 	log info "Prevent clobbering of \${backup_dir} directory"
 	mkdir -p "\${backup_dir}"
-	umount "\${backup_dir}" || log inf "\${backup_dir} not mounted"
+	umount "\${backup_dir}" || log info "\${backup_dir} not mounted"
 
 	log info "Mounting \${NFS_SHARE} at \${backup_dir}"
 	mount -t nfs "\${NFS_SHARE}" "\${backup_dir}"
