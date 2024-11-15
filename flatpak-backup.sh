@@ -68,9 +68,14 @@ cat <<-EOT >>"${flatback_binary}"
 	  log info "Backing up flatpak application data"
 	  rsync --archive --delete --human-readable --partial --progress --verbose --exclude="cache" "\${user_home}/.var/app" "\${flatpak_backup_dir}/"
 
+    log info "Backing up flatpak overrides"
+    rsync --archive --delete --human-readable --partial --progress --verbose "\${user_home}/.local/share/flatpak/overrides" "\${flatpak_backup_dir}/"
 	else
 	  log info "Restoring flatpak application data"
 	  rsync --archive --human-readable --progress --verbose "\${flatpak_backup_dir}/app" "\${user_home}/.var/"
+    
+    log info "Restoring flatpak overrides"
+    rsync --archive --human-readable --progress --verbose "\${flatpak_backup_dir}/overrides" "\${user_home}/.local/share/flatpak/"
 	fi
 
 	log info "Unmounting \${backup_dir}"
