@@ -63,6 +63,7 @@ ubuntu)
   ;;
 *)
   log error "OS $ID is not supported"
+  exit 1
   ;;
 esac
 
