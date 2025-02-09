@@ -7,28 +7,28 @@ handle_root
 handle_errors
 
 cat <<EOT
-  ███                      █████              ████  ████                             
- ░░░                      ░░███              ░░███ ░░███                             
- ████  ████████    █████  ███████    ██████   ░███  ░███                             
-░░███ ░░███░░███  ███░░  ░░░███░    ░░░░░███  ░███  ░███                             
- ░███  ░███ ░███ ░░█████   ░███      ███████  ░███  ░███                             
- ░███  ░███ ░███  ░░░░███  ░███ ███ ███░░███  ░███  ░███                             
- █████ ████ █████ ██████   ░░█████ ░░████████ █████ █████                            
-░░░░░ ░░░░ ░░░░░ ░░░░░░     ░░░░░   ░░░░░░░░ ░░░░░ ░░░░░                             
-                                                                                     
-                                                                                     
-                                                                                     
-    ██████  ████             █████                                 █████             
-   ███░░███░░███            ░░███                                 ░░███              
-  ░███ ░░░  ░███   ██████   ███████   ████████   ██████    ██████  ░███ █████  █████ 
- ███████    ░███  ░░░░░███ ░░░███░   ░░███░░███ ░░░░░███  ███░░███ ░███░░███  ███░░  
-░░░███░     ░███   ███████   ░███     ░███ ░███  ███████ ░███ ░░░  ░██████░  ░░█████ 
-  ░███      ░███  ███░░███   ░███ ███ ░███ ░███ ███░░███ ░███  ███ ░███░░███  ░░░░███
-  █████     █████░░████████  ░░█████  ░███████ ░░████████░░██████  ████ █████ ██████ 
- ░░░░░     ░░░░░  ░░░░░░░░    ░░░░░   ░███░░░   ░░░░░░░░  ░░░░░░  ░░░░ ░░░░░ ░░░░░░  
-                                      ░███                                           
-                                      █████                                          
-                                     ░░░░░
+  ███                      █████              ████  ████                    
+ ░░░                      ░░███              ░░███ ░░███                    
+ ████  ████████    █████  ███████    ██████   ░███  ░███                    
+░░███ ░░███░░███  ███░░  ░░░███░    ░░░░░███  ░███  ░███                    
+ ░███  ░███ ░███ ░░█████   ░███      ███████  ░███  ░███                    
+ ░███  ░███ ░███  ░░░░███  ░███ ███ ███░░███  ░███  ░███                    
+ █████ ████ █████ ██████   ░░█████ ░░████████ █████ █████                   
+░░░░░ ░░░░ ░░░░░ ░░░░░░     ░░░░░   ░░░░░░░░ ░░░░░ ░░░░░                    
+                                                                            
+                                                                            
+                                                                            
+    ██████  ████             █████                        █████             
+   ███░░███░░███            ░░███                        ░░███              
+  ░███ ░░░  ░███   ██████   ███████   ████████   ██████   ░███ █████  █████ 
+ ███████    ░███  ░░░░░███ ░░░███░   ░░███░░███ ░░░░░███  ░███░░███  ███░░  
+░░░███░     ░███   ███████   ░███     ░███ ░███  ███████  ░██████░  ░░█████ 
+  ░███      ░███  ███░░███   ░███ ███ ░███ ░███ ███░░███  ░███░░███  ░░░░███
+  █████     █████░░████████  ░░█████  ░███████ ░░████████ ████ █████ ██████ 
+ ░░░░░     ░░░░░  ░░░░░░░░    ░░░░░   ░███░░░   ░░░░░░░░ ░░░░ ░░░░░ ░░░░░░  
+                                      ░███                                  
+                                      █████                                 
+                                     ░░░░░                                  
 EOT
 
 log info "Detecting OS"
@@ -46,7 +46,6 @@ ubuntu)
   log info "Installing flatpak"
   apt-get install -y flatpak gnome-software-plugin-flatpak
   ;;
-
 *)
   log error "OS $ID is not supported"
   ;;
@@ -55,7 +54,7 @@ esac
 userName=$(id -un 1000)
 
 log info "Adding flathub remote"
-sudo -u "${userName}" /bin/bash -e -c "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
+sudo -u "${userName}" /bin/bash -e -c "flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
 
 log info "Installing flatpaks"
-sudo -u "${userName}" /bin/bash -e -c "flatpak install -y flathub com.github.tchx84.Flatseal ca.desrt.dconf-editor com.bitwarden.desktop com.brave.Browser com.jgraph.drawio.desktop com.mattjakeman.ExtensionManager com.rustdesk.RustDesk me.proton.Mail org.localsend.localsend_app"
+sudo -u "${userName}" /bin/bash -e -c "flatpak install -y --user flathub com.github.tchx84.Flatseal ca.desrt.dconf-editor com.bitwarden.desktop com.brave.Browser com.jgraph.drawio.desktop com.mattjakeman.ExtensionManager com.rustdesk.RustDesk me.proton.Mail org.localsend.localsend_app"

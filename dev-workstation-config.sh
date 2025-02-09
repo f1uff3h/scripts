@@ -89,8 +89,8 @@ sudo -u "${userName}" /bin/bash -e -- <<-EOT
     git fetch
     git pull
   else
-    pushd alacritty/
     git clone https://github.com/alacritty/alacritty.git
+    pushd alacritty/
   fi
 	/home/${userName}/.cargo/bin/cargo build --release
 	mkdir -p ~/.config/alacritty
